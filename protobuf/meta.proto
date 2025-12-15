@@ -14,6 +14,8 @@ enum MessageType {
     audio = 8;
     template = 9;
     interactive = 10;
+    sticker = 11;
+    contacts = 12;
 }
 
 message Meta {

@@ -22,6 +22,7 @@ message Provider {
 
 message TextMessage {
     string body = 1 [(validate.rules).string.min_len = 1];
+    bool preview_url = 2;
 }
 
 message ImageMessage {
@@ -212,6 +213,52 @@ message StickerMessage {
     Provider provider = 8;
 }
 
+message ContactMessage {
+    message Name {
+        string formatted_name = 1 [(validate.rules).string.min_len = 1];
+        string first_name = 2;
+        string last_name = 3;
+        string middle_name = 4;
+        string suffix = 5;
+        string prefix = 6;
+    }
+    message Phone {
+        string phone = 1;
+        string type = 2; // CELL, MAIN, IPHONE, HOME, WORK
+        string wa_id = 3;
+    }
+    message Email {
+        string email = 1;
+        string type = 2; // HOME, WORK
+    }
+    message Address {
+        string street = 1;
+        string city = 2;
+        string state = 3;
+        string zip = 4;
+        string country = 5;
+        string country_code = 6;
+        string type = 7; // HOME, WORK
+    }
+    message Url {
+        string url = 1;
+        string type = 2; // HOME, WORK
+    }
+    message Org {
+        string company = 1;
+        string department = 2;
+        string title = 3;
+    }
+
+    repeated Address addresses = 1;
+    string birthday = 2; // YYYY-MM-DD format
+    repeated Email emails = 3;
+    Name name = 4 [(validate.rules).message.required = true];
+    Org org = 5;
+    repeated Phone phones = 6;
+    repeated Url urls = 7;
+}
+
 message MessageWrapper {
     repeated Message messages = 1;
 }
@@ -251,6 +298,10 @@ message Message {
     }
 
     RecipientType recipient_type = 19;
-    bool preview_url = 20;
-    string messaging_product = 21;
+    string messaging_product = 20 [(validate.rules).string = {
+        ignore_empty: true,
+        in: ["whatsapp"]
+    }];
+    repeated ContactMessage contacts = 21;
+    string biz_opaque_callback_data = 22 [(validate.rules).string.max_len = 512];
 }

@@ -11,3 +11,4 @@ libs
 node_modules
 .idea/
 data/
+junit-report.xml

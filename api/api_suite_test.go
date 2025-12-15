@@ -3,7 +3,6 @@ package api_test
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -79,280 +78,152 @@ func StartNewServer(s *fasthttp.Server) (client *http.Client) {
 	return
 }
 
-var _ = Describe("Users API", func() {
+var _ = Describe("Messages API", func() {
 	defer GinkgoRecover()
 
 	buf := bytes.NewBuffer(nil)
-	password := "newPassword123!"
-
-	w_api.Config = &model.InternalConfig{
-		Users: map[string]string{
-			"admin": "secret",
-		},
-	}
 
 	AfterSuite(func() {
 		err := api.Server.Shutdown()
 		PanicIfNotNil(err)
 	})
 
-	Describe("First Login", func() {
-
-		requestBody := model.ChangePwdRequest{
-			NewPassword: password,
-		}
-
-		buf.Reset()
+	Describe("Authentication", func() {
 
 		Context("Missing Authorization Header", func() {
-			marsheler.Marshal(buf, &requestBody)
-			req, _ := http.NewRequest("POST", baseUrl+"/users/login", buf)
+			message := &model.Message{
+				To:   "+5511999999999",
+				Type: model.MessageType_text,
+				Text: &model.TextMessage{
+					Body: "Hello World",
+				},
+			}
+			buf.Reset()
+			marsheler.Marshal(buf, message)
+			req, _ := http.NewRequest("POST", baseUrl+"/123456789/messages", buf)
 			resp, err := client.Do(req)
 			PanicIfNotNil(err)
 
 			It("Should have status code 401", func() {
 				Expect(resp.StatusCode).To(Equal(401))
 			})
-
-			It("Should have an error response body", func() {
-				errResp := new(model.ErrorResponse)
-				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, errResp))
-
-				Expect(errResp.Errors).To(HaveLen(1))
-				Expect(errResp.Errors[0].Code).To(Equal(int32(401)))
-				Expect(errResp.Errors[0].Title).To(Equal("Client Error"))
-				Expect(errResp.Errors[0].Details).To(Equal("Missing Authorization"))
-			})
 		})
 
-		buf.Reset()
-
-		Context("Incorrect Authorization", func() {
-			marsheler.Marshal(buf, &requestBody)
-			req, _ := http.NewRequest("POST", baseUrl+"/users/login", buf)
-			req.SetBasicAuth("admin", "wrongPassword")
-
+		Context("Invalid API Key", func() {
+			message := &model.Message{
+				To:   "+5511999999999",
+				Type: model.MessageType_text,
+				Text: &model.TextMessage{
+					Body: "Hello World",
+				},
+			}
+			buf.Reset()
+			marsheler.Marshal(buf, message)
+			req, _ := http.NewRequest("POST", baseUrl+"/123456789/messages", buf)
+			req.Header.Set("Authorization", "Bearer invalid_token")
 			resp, err := client.Do(req)
 			PanicIfNotNil(err)
 
 			It("Should have status code 401", func() {
 				Expect(resp.StatusCode).To(Equal(401))
 			})
-
-			It("Should have an error response body", func() {
-				errResp := new(model.ErrorResponse)
-				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, errResp))
-
-				Expect(errResp.Errors).To(HaveLen(1))
-				Expect(errResp.Errors[0].Code).To(Equal(int32(401)))
-				Expect(errResp.Errors[0].Title).To(Equal("Client Error"))
-				Expect(errResp.Errors[0].Details).To(Equal("Username or password is invalid"))
-			})
 		})
 
-		buf.Reset()
-
-		Context("Missing Password Change", func() {
-			req, _ := http.NewRequest("POST", baseUrl+"/users/login", buf)
-			req.SetBasicAuth("admin", "secret")
-
-			resp, err := client.Do(req)
-			PanicIfNotNil(err)
-
-			It("Should have status code 400", func() {
-				Expect(resp.StatusCode).To(Equal(400))
-			})
-
-			It("Should have an error response body", func() {
-				errResp := new(model.ErrorResponse)
-				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, errResp))
-
-				Expect(errResp.Errors).To(HaveLen(1))
-				Expect(errResp.Errors[0].Code).To(Equal(int32(400)))
-				Expect(errResp.Errors[0].Title).To(Equal("Client Error"))
-				Expect(errResp.Errors[0].Details).To(Equal("Password change required"))
-			})
-		})
-
-		buf.Reset()
-
-		Context("Successful First Login", func() {
-			marsheler.Marshal(buf, &requestBody)
-			req, _ := http.NewRequest("POST", baseUrl+"/users/login", buf)
-			req.SetBasicAuth("admin", "secret")
-
+		Context("Valid API Key", func() {
+			message := &model.Message{
+				To:   "+5511999999999",
+				Type: model.MessageType_text,
+				Text: &model.TextMessage{
+					Body: "Hello World",
+				},
+			}
+			buf.Reset()
+			marsheler.Marshal(buf, message)
+			req, _ := http.NewRequest("POST", baseUrl+"/123456789/messages", buf)
+			req.Header.Set("Authorization", "Bearer "+staticAPIToken)
 			resp, err := client.Do(req)
 			PanicIfNotNil(err)
 
 			It("Should have status code 200", func() {
 				Expect(resp.StatusCode).To(Equal(200))
-			})
-
-			It("Should have a bearer token in response body", func() {
-				loginResp := new(model.LoginResponse)
-				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, loginResp))
-
-				Expect(loginResp.Users).To(HaveLen(1))
-				Expect(loginResp.Users[0].Token).ToNot(BeEmpty())
-				Expect(loginResp.Users[0].ExpiresAfter).ToNot(BeEmpty())
 			})
 		})
 	})
 
-	buf.Reset()
+	Describe("Send Messages", func() {
 
-	Context("Login & Logout", func() {
-
-		Context("Login", func() {
-			req, _ := http.NewRequest("POST", baseUrl+"/users/login", buf)
-
-			req.SetBasicAuth("admin", password)
-			resp, err := client.Do(req)
-			PanicIfNotNil(err)
-
-			It("Should have status code 200", func() {
-				Expect(resp.StatusCode).To(Equal(200))
-			})
-
-			It("Should have a bearer token in response body", func() {
-				loginResp := new(model.LoginResponse)
-				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, loginResp))
-
-				Expect(loginResp.Users).To(HaveLen(1))
-				Expect(loginResp.Users[0].Token).ToNot(BeEmpty())
-				Expect(loginResp.Users[0].ExpiresAfter).ToNot(BeEmpty())
-			})
-		})
-
-		buf.Reset()
-
-		Context("Logout", func() {
-			authToken, err := api.GenerateToken("admin", "ADMIN")
-			PanicIfNotNil(err)
-
-			req, _ := http.NewRequest("POST", baseUrl+"/users/logout", buf)
-			req.Header.Set("Authorization", "Bearer "+authToken)
-
-			resp, err := client.Do(req)
-			PanicIfNotNil(err)
-
-			It("Should have status code 200", func() {
-				Expect(resp.StatusCode).To(Equal(200))
-			})
-
-			Context("Verify that logout worked", func() {
-
-				requestBody := model.User{
-					Username: "username",
-					Password: "password",
-				}
-				marsheler.Marshal(buf, &requestBody)
-
-				req, _ = http.NewRequest("POST", baseUrl+"/users", buf)
-				req.Header.Set("Authorization", "Bearer "+authToken)
-				resp, err := client.Do(req)
-				PanicIfNotNil(err)
-				It("Should have status code 401", func() {
-					Expect(resp.StatusCode).To(Equal(401))
-				})
-
-			})
-
-		})
-	})
-
-	Context("Creating and Deleting Users", func() {
-
-		adminAuthToken, err := api.GenerateToken("admin", "ADMIN")
-		PanicIfNotNil(err)
-
-		username := "username"
-		requestBody := &model.User{
-			Username: username,
-			Password: "password",
-		}
-
-		buf.Reset()
-
-		Context("Creating a new User", func() {
-
-			marsheler.Marshal(buf, requestBody)
-
-			req, _ := http.NewRequest("POST", baseUrl+"/users", buf)
-			req.Header.Set("Authorization", "Bearer "+adminAuthToken)
-
-			resp, err := client.Do(req)
-			PanicIfNotNil(err)
-
-			It("Should have status code 201", func() {
-				Expect(resp.StatusCode).To(Equal(201))
-			})
-		})
-
-		buf.Reset()
-
-		Context("Creating an already existing User", func() {
-
-			marsheler.Marshal(buf, requestBody)
-
-			req, _ := http.NewRequest("POST", baseUrl+"/users", buf)
-			req.Header.Set("Authorization", "Bearer "+adminAuthToken)
-
-			resp, err := client.Do(req)
-			PanicIfNotNil(err)
-
-			It("Should have status code 400", func() {
-				Expect(resp.StatusCode).To(Equal(400))
-			})
-
-			It("Should have an error response body", func() {
-				errResp := new(model.ErrorResponse)
-				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, errResp))
-
-				Expect(errResp.Errors).To(HaveLen(1))
-				Expect(errResp.Errors[0].Code).To(Equal(int32(400)))
-				Expect(errResp.Errors[0].Title).To(Equal("User already exists"))
-				Expect(errResp.Errors[0].Details).To(Equal(fmt.Sprintf("The requested user %s already exists", username)))
-			})
-		})
-
-		buf.Reset()
-
-		Context("Deleting a User", func() {
-			req, _ := http.NewRequest("DELETE", baseUrl+"/users/"+username, buf)
-			req.Header.Set("Authorization", "Bearer "+adminAuthToken)
-
-			resp, err := client.Do(req)
-			PanicIfNotNil(err)
-
-			It("Should have status code 200", func() {
-				Expect(resp.StatusCode).To(Equal(200))
-			})
-		})
-
-		buf.Reset()
-
-		Context("Deleting nonexistent User", func() {
-			req, _ := http.NewRequest("DELETE", baseUrl+"/users/"+username, buf)
-			req.Header.Set("Authorization", "Bearer "+adminAuthToken)
-
+		Context("Missing phoneNumberId", func() {
+			message := &model.Message{
+				To:   "+5511999999999",
+				Type: model.MessageType_text,
+				Text: &model.TextMessage{
+					Body: "Hello World",
+				},
+			}
+			buf.Reset()
+			marsheler.Marshal(buf, message)
+			req, _ := http.NewRequest("POST", baseUrl+"/messages", buf)
+			req.Header.Set("Authorization", "Bearer "+staticAPIToken)
 			resp, err := client.Do(req)
 			PanicIfNotNil(err)
 
 			It("Should have status code 404", func() {
 				Expect(resp.StatusCode).To(Equal(404))
 			})
+		})
 
-			It("Should have an error response body", func() {
-				errResp := new(model.ErrorResponse)
-				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, errResp))
+		Context("Send Text Message", func() {
+			message := &model.Message{
+				To:   "+5511999999999",
+				Type: model.MessageType_text,
+				Text: &model.TextMessage{
+					Body:       "Hello World",
+					PreviewUrl: true,
+				},
+				MessagingProduct: "whatsapp",
+			}
+			buf.Reset()
+			marsheler.Marshal(buf, message)
+			req, _ := http.NewRequest("POST", baseUrl+"/123456789/messages", buf)
+			req.Header.Set("Authorization", "Bearer "+staticAPIToken)
+			resp, err := client.Do(req)
+			PanicIfNotNil(err)
 
-				Expect(errResp.Errors).To(HaveLen(1))
-				Expect(errResp.Errors[0].Code).To(Equal(int32(404)))
-				Expect(errResp.Errors[0].Title).To(Equal("Client Error"))
-				Expect(errResp.Errors[0].Details).To(Equal(fmt.Sprintf("Could not find user with name %s", username)))
+			It("Should have status code 200", func() {
+				Expect(resp.StatusCode).To(Equal(200))
+			})
+
+			It("Should return a message ID", func() {
+				idResp := new(model.IdResponse)
+				PanicIfNotNil(unmarsheler.Unmarshal(resp.Body, idResp))
+
+				Expect(idResp.Messages).To(HaveLen(1))
+				Expect(idResp.Messages[0].Id).ToNot(BeEmpty())
+			})
+		})
+
+		Context("Send Image Message", func() {
+			message := &model.Message{
+				To:   "+5511999999999",
+				Type: model.MessageType_image,
+				Image: &model.ImageMessage{
+					Id:      "1234567890",
+					Link:    "https://example.com/image.jpg",
+					Caption: "Check this out!",
+				},
+				MessagingProduct: "whatsapp",
+			}
+			buf.Reset()
+			marsheler.Marshal(buf, message)
+			req, _ := http.NewRequest("POST", baseUrl+"/123456789/messages", buf)
+			req.Header.Set("Authorization", "Bearer "+staticAPIToken)
+			resp, err := client.Do(req)
+			PanicIfNotNil(err)
+
+			It("Should have status code 200", func() {
+				Expect(resp.StatusCode).To(Equal(200))
 			})
 		})
 	})
 
-}) // Users API
+}) // Messages API

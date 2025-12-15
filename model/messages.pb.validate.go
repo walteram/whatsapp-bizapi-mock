@@ -273,6 +273,8 @@ func (m *TextMessage) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for PreviewUrl
+
 	if len(errors) > 0 {
 		return TextMessageMultiError(errors)
 	}
@@ -1912,6 +1914,312 @@ var _ interface {
 	ErrorName() string
 } = StickerMessageValidationError{}
 
+// Validate checks the field values on ContactMessage with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ContactMessage) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ContactMessage with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ContactMessageMultiError,
+// or nil if none found.
+func (m *ContactMessage) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ContactMessage) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetAddresses() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Addresses[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Addresses[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ContactMessageValidationError{
+					field:  fmt.Sprintf("Addresses[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Birthday
+
+	for idx, item := range m.GetEmails() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Emails[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Emails[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ContactMessageValidationError{
+					field:  fmt.Sprintf("Emails[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.GetName() == nil {
+		err := ContactMessageValidationError{
+			field:  "Name",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetName()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ContactMessageValidationError{
+					field:  "Name",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ContactMessageValidationError{
+					field:  "Name",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetName()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ContactMessageValidationError{
+				field:  "Name",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetOrg()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ContactMessageValidationError{
+					field:  "Org",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ContactMessageValidationError{
+					field:  "Org",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOrg()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ContactMessageValidationError{
+				field:  "Org",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetPhones() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Phones[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Phones[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ContactMessageValidationError{
+					field:  fmt.Sprintf("Phones[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	for idx, item := range m.GetUrls() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Urls[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ContactMessageValidationError{
+						field:  fmt.Sprintf("Urls[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ContactMessageValidationError{
+					field:  fmt.Sprintf("Urls[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ContactMessageMultiError(errors)
+	}
+	return nil
+}
+
+// ContactMessageMultiError is an error wrapping multiple validation errors
+// returned by ContactMessage.ValidateAll() if the designated constraints
+// aren't met.
+type ContactMessageMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ContactMessageMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ContactMessageMultiError) AllErrors() []error { return m }
+
+// ContactMessageValidationError is the validation error returned by
+// ContactMessage.Validate if the designated constraints aren't met.
+type ContactMessageValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ContactMessageValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ContactMessageValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ContactMessageValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ContactMessageValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ContactMessageValidationError) ErrorName() string { return "ContactMessageValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ContactMessageValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sContactMessage.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ContactMessageValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ContactMessageValidationError{}
+
 // Validate checks the field values on MessageWrapper with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -2571,7 +2879,65 @@ func (m *Message) validate(all bool) error {
 
 	// no validation rules for RecipientType
 
-	// no validation rules for PreviewUrl
+	if m.GetMessagingProduct() != "" {
+
+		if _, ok := _Message_MessagingProduct_InLookup[m.GetMessagingProduct()]; !ok {
+			err := MessageValidationError{
+				field:  "MessagingProduct",
+				reason: "value must be in list [whatsapp]",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	for idx, item := range m.GetContacts() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MessageValidationError{
+						field:  fmt.Sprintf("Contacts[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MessageValidationError{
+						field:  fmt.Sprintf("Contacts[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MessageValidationError{
+					field:  fmt.Sprintf("Contacts[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if utf8.RuneCountInString(m.GetBizOpaqueCallbackData()) > 512 {
+		err := MessageValidationError{
+			field:  "BizOpaqueCallbackData",
+			reason: "value length must be at most 512 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return MessageMultiError(errors)
@@ -2650,6 +3016,10 @@ var _ interface {
 } = MessageValidationError{}
 
 var _Message_To_Pattern = regexp.MustCompile("^\\+?(?:[0-9]){6,14}[0-9]$")
+
+var _Message_MessagingProduct_InLookup = map[string]struct{}{
+	"whatsapp": {},
+}
 
 // Validate checks the field values on TemplateMessage_Language with the rules
 // defined in the proto definition for this message. If any rules are
@@ -4525,3 +4895,664 @@ var _ interface {
 } = InteractiveMessage_ButtonsAction_ButtonsActionReplyValidationError{}
 
 var _InteractiveMessage_ButtonsAction_ButtonsActionReply_Title_Pattern = regexp.MustCompile("^[^\\x{1F600}-\\x{1F6FF}|[\\x{2600}-\\x{26FF}]*$")
+
+// Validate checks the field values on ContactMessage_Name with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ContactMessage_Name) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ContactMessage_Name with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ContactMessage_NameMultiError, or nil if none found.
+func (m *ContactMessage_Name) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ContactMessage_Name) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetFormattedName()) < 1 {
+		err := ContactMessage_NameValidationError{
+			field:  "FormattedName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for FirstName
+
+	// no validation rules for LastName
+
+	// no validation rules for MiddleName
+
+	// no validation rules for Suffix
+
+	// no validation rules for Prefix
+
+	if len(errors) > 0 {
+		return ContactMessage_NameMultiError(errors)
+	}
+	return nil
+}
+
+// ContactMessage_NameMultiError is an error wrapping multiple validation
+// errors returned by ContactMessage_Name.ValidateAll() if the designated
+// constraints aren't met.
+type ContactMessage_NameMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ContactMessage_NameMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ContactMessage_NameMultiError) AllErrors() []error { return m }
+
+// ContactMessage_NameValidationError is the validation error returned by
+// ContactMessage_Name.Validate if the designated constraints aren't met.
+type ContactMessage_NameValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ContactMessage_NameValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ContactMessage_NameValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ContactMessage_NameValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ContactMessage_NameValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ContactMessage_NameValidationError) ErrorName() string {
+	return "ContactMessage_NameValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ContactMessage_NameValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sContactMessage_Name.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ContactMessage_NameValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ContactMessage_NameValidationError{}
+
+// Validate checks the field values on ContactMessage_Phone with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ContactMessage_Phone) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ContactMessage_Phone with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ContactMessage_PhoneMultiError, or nil if none found.
+func (m *ContactMessage_Phone) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ContactMessage_Phone) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Phone
+
+	// no validation rules for Type
+
+	// no validation rules for WaId
+
+	if len(errors) > 0 {
+		return ContactMessage_PhoneMultiError(errors)
+	}
+	return nil
+}
+
+// ContactMessage_PhoneMultiError is an error wrapping multiple validation
+// errors returned by ContactMessage_Phone.ValidateAll() if the designated
+// constraints aren't met.
+type ContactMessage_PhoneMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ContactMessage_PhoneMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ContactMessage_PhoneMultiError) AllErrors() []error { return m }
+
+// ContactMessage_PhoneValidationError is the validation error returned by
+// ContactMessage_Phone.Validate if the designated constraints aren't met.
+type ContactMessage_PhoneValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ContactMessage_PhoneValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ContactMessage_PhoneValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ContactMessage_PhoneValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ContactMessage_PhoneValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ContactMessage_PhoneValidationError) ErrorName() string {
+	return "ContactMessage_PhoneValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ContactMessage_PhoneValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sContactMessage_Phone.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ContactMessage_PhoneValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ContactMessage_PhoneValidationError{}
+
+// Validate checks the field values on ContactMessage_Email with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ContactMessage_Email) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ContactMessage_Email with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ContactMessage_EmailMultiError, or nil if none found.
+func (m *ContactMessage_Email) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ContactMessage_Email) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Email
+
+	// no validation rules for Type
+
+	if len(errors) > 0 {
+		return ContactMessage_EmailMultiError(errors)
+	}
+	return nil
+}
+
+// ContactMessage_EmailMultiError is an error wrapping multiple validation
+// errors returned by ContactMessage_Email.ValidateAll() if the designated
+// constraints aren't met.
+type ContactMessage_EmailMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ContactMessage_EmailMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ContactMessage_EmailMultiError) AllErrors() []error { return m }
+
+// ContactMessage_EmailValidationError is the validation error returned by
+// ContactMessage_Email.Validate if the designated constraints aren't met.
+type ContactMessage_EmailValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ContactMessage_EmailValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ContactMessage_EmailValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ContactMessage_EmailValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ContactMessage_EmailValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ContactMessage_EmailValidationError) ErrorName() string {
+	return "ContactMessage_EmailValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ContactMessage_EmailValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sContactMessage_Email.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ContactMessage_EmailValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ContactMessage_EmailValidationError{}
+
+// Validate checks the field values on ContactMessage_Address with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ContactMessage_Address) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ContactMessage_Address with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ContactMessage_AddressMultiError, or nil if none found.
+func (m *ContactMessage_Address) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ContactMessage_Address) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Street
+
+	// no validation rules for City
+
+	// no validation rules for State
+
+	// no validation rules for Zip
+
+	// no validation rules for Country
+
+	// no validation rules for CountryCode
+
+	// no validation rules for Type
+
+	if len(errors) > 0 {
+		return ContactMessage_AddressMultiError(errors)
+	}
+	return nil
+}
+
+// ContactMessage_AddressMultiError is an error wrapping multiple validation
+// errors returned by ContactMessage_Address.ValidateAll() if the designated
+// constraints aren't met.
+type ContactMessage_AddressMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ContactMessage_AddressMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ContactMessage_AddressMultiError) AllErrors() []error { return m }
+
+// ContactMessage_AddressValidationError is the validation error returned by
+// ContactMessage_Address.Validate if the designated constraints aren't met.
+type ContactMessage_AddressValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ContactMessage_AddressValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ContactMessage_AddressValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ContactMessage_AddressValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ContactMessage_AddressValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ContactMessage_AddressValidationError) ErrorName() string {
+	return "ContactMessage_AddressValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ContactMessage_AddressValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sContactMessage_Address.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ContactMessage_AddressValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ContactMessage_AddressValidationError{}
+
+// Validate checks the field values on ContactMessage_Url with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ContactMessage_Url) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ContactMessage_Url with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ContactMessage_UrlMultiError, or nil if none found.
+func (m *ContactMessage_Url) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ContactMessage_Url) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Url
+
+	// no validation rules for Type
+
+	if len(errors) > 0 {
+		return ContactMessage_UrlMultiError(errors)
+	}
+	return nil
+}
+
+// ContactMessage_UrlMultiError is an error wrapping multiple validation errors
+// returned by ContactMessage_Url.ValidateAll() if the designated constraints
+// aren't met.
+type ContactMessage_UrlMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ContactMessage_UrlMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ContactMessage_UrlMultiError) AllErrors() []error { return m }
+
+// ContactMessage_UrlValidationError is the validation error returned by
+// ContactMessage_Url.Validate if the designated constraints aren't met.
+type ContactMessage_UrlValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ContactMessage_UrlValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ContactMessage_UrlValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ContactMessage_UrlValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ContactMessage_UrlValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ContactMessage_UrlValidationError) ErrorName() string {
+	return "ContactMessage_UrlValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ContactMessage_UrlValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sContactMessage_Url.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ContactMessage_UrlValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ContactMessage_UrlValidationError{}
+
+// Validate checks the field values on ContactMessage_Org with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ContactMessage_Org) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ContactMessage_Org with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ContactMessage_OrgMultiError, or nil if none found.
+func (m *ContactMessage_Org) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ContactMessage_Org) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Company
+
+	// no validation rules for Department
+
+	// no validation rules for Title
+
+	if len(errors) > 0 {
+		return ContactMessage_OrgMultiError(errors)
+	}
+	return nil
+}
+
+// ContactMessage_OrgMultiError is an error wrapping multiple validation errors
+// returned by ContactMessage_Org.ValidateAll() if the designated constraints
+// aren't met.
+type ContactMessage_OrgMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ContactMessage_OrgMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ContactMessage_OrgMultiError) AllErrors() []error { return m }
+
+// ContactMessage_OrgValidationError is the validation error returned by
+// ContactMessage_Org.Validate if the designated constraints aren't met.
+type ContactMessage_OrgValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ContactMessage_OrgValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ContactMessage_OrgValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ContactMessage_OrgValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ContactMessage_OrgValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ContactMessage_OrgValidationError) ErrorName() string {
+	return "ContactMessage_OrgValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ContactMessage_OrgValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sContactMessage_Org.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ContactMessage_OrgValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ContactMessage_OrgValidationError{}

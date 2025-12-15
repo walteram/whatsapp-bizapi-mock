@@ -10,6 +10,7 @@ require (
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/uuid v1.3.0
+	github.com/jstemmer/go-junit-report v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
 	github.com/opentracing/opentracing-go v1.2.0
