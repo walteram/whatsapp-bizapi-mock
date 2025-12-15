@@ -55,11 +55,13 @@ const (
 var TemplateMessage_Language_Code_name = map[int32]string{
 	0: "en",
 	1: "de",
+	2: "pt_BR",
 }
 
 var TemplateMessage_Language_Code_value = map[string]int32{
 	"en": 0,
 	"de": 1,
+	"pt_BR": 2,
 }
 
 func (x TemplateMessage_Language_Code) String() string {
@@ -2162,6 +2164,7 @@ type Message struct {
 	Interactive          *InteractiveMessage   `protobuf:"bytes,18,opt,name=interactive,proto3" json:"interactive,omitempty"`
 	RecipientType        Message_RecipientType `protobuf:"varint,19,opt,name=recipient_type,json=recipientType,proto3,enum=whatsapp.Message_RecipientType" json:"recipient_type,omitempty"`
 	PreviewUrl           bool                  `protobuf:"varint,20,opt,name=preview_url,json=previewUrl,proto3" json:"preview_url,omitempty"`
+	MessagingProduct     string                `protobuf:"bytes,21,opt,name=messaging_product,proto3" json:"messaging_product,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
 	XXX_unrecognized     []byte                `json:"-"`
 	XXX_sizecache        int32                 `json:"-"`

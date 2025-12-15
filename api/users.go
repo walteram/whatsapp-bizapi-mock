@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/ron96G/whatsapp-bizapi-mock/model"
 	"github.com/valyala/fasthttp"
@@ -81,10 +80,9 @@ func (a *API) Login(ctx *fasthttp.RequestCtx) {
 // @Router /users/logout [post]
 // @Security BearerAuth
 func (a *API) Logout(ctx *fasthttp.RequestCtx) {
-	auth := string(ctx.Request.Header.Peek("Authorization"))
-	token := strings.TrimPrefix(auth, "Bearer ")
-	token = strings.TrimSpace(token)
-	a.Tokens.Del(token)
+	// Note: This function is no longer used since we switched to static API key authentication
+	// Kept for backwards compatibility but does nothing
+	ctx.SetStatusCode(200)
 }
 
 // CreateUser godoc

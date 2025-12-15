@@ -252,4 +252,5 @@ message Message {
 
     RecipientType recipient_type = 19;
     bool preview_url = 20;
+    string messaging_product = 21;
 }

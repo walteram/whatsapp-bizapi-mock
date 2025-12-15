@@ -9,3 +9,5 @@ cmd
 cmd.exe
 libs
 node_modules
+.idea/
+data/

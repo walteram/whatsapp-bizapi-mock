@@ -7,7 +7,6 @@ import (
 	"github.com/fasthttp/router"
 	"github.com/ron96G/whatsapp-bizapi-mock/model"
 	"github.com/ron96G/whatsapp-bizapi-mock/monitoring"
-	"github.com/ron96G/whatsapp-bizapi-mock/util"
 	"github.com/ron96G/whatsapp-bizapi-mock/webhook"
 	"github.com/valyala/fasthttp"
 
@@ -41,24 +40,24 @@ type API struct {
 	Server       *fasthttp.Server
 	Status       string
 	Config       *model.InternalConfig
-	Tokens       *util.Set
+	APIKey       string
 	Webhook      *webhook.Webhook
 	RequestLimit uint
 	Log          log.Logger
 	cancel       chan int
 }
 
-func NewAPI(apiPrefix, staticApiToken string, requestLimit uint, cfg *model.InternalConfig, webhook *webhook.Webhook) *API {
+func NewAPI(apiPrefix, apiKey string, requestLimit uint, cfg *model.InternalConfig, webhook *webhook.Webhook) *API {
 	api := &API{
 		Status:       model.Meta_experimental.String(),
 		Config:       cfg,
-		Tokens:       util.NewSet(),
+		APIKey:       apiKey,
 		Webhook:      webhook,
 		RequestLimit: requestLimit,
 		Log:          log.New("api_logger", "component", "api"),
 		cancel:       make(chan int, 1),
 	}
-	api.NewServer(apiPrefix, staticApiToken)
+	api.NewServer(apiPrefix)
 	return api
 }
 
@@ -68,14 +67,11 @@ func NewAPI(apiPrefix, staticApiToken string, requestLimit uint, cfg *model.Inte
 
 // @host localhost:9090
 // @schemes https
-// @securityDefinitions.basic BasicAuth
-// @in header
-// @name Authorization
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
 // @BasePath /v1
-func (a *API) NewServer(apiPrefix string, staticApiToken string) {
+func (a *API) NewServer(apiPrefix string) {
 	r := router.New()
 	r.RedirectFixedPath = false
 	r.RedirectTrailingSlash = false
@@ -84,16 +80,10 @@ func (a *API) NewServer(apiPrefix string, staticApiToken string) {
 	// general resources
 	subR.POST("/generate", Limiter(a.GenerateWebhookRequests, 2))
 	subR.POST("/generate/cancel", a.CancelGenerateWebhookRquests)
-	subR.POST("/messages", monitoring.All(Limiter(a.Authorize(a.SendMessages), a.RequestLimit)))
+	subR.POST("/{phoneNumberId}/messages", monitoring.All(Limiter(a.Authorize(a.SendMessages), a.RequestLimit)))
 	subR.POST("/contacts", monitoring.All(Limiter(a.Authorize(a.Contacts), a.RequestLimit)))
 
-	subR.GET("/health", Limiter(AuthorizeStaticToken(HealthCheck, staticApiToken), 5))
-
-	// User resources
-	subR.POST("/users/login", monitoring.All(a.Login))
-	subR.POST("/users/logout", monitoring.All(a.Authorize(a.Logout)))
-	subR.POST("/users", monitoring.All(a.AuthorizeWithRoles(a.CreateUser, []string{"ADMIN"})))
-	subR.DELETE("/users/{name}", monitoring.All(a.AuthorizeWithRoles(a.DeleteUser, []string{"ADMIN"})))
+	subR.GET("/health", Limiter(a.Authorize(HealthCheck), 5))
 
 	// Media resources
 	subR.POST("/media", monitoring.All(a.Authorize(SaveMedia)))

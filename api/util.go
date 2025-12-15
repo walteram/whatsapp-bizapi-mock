@@ -178,6 +178,8 @@ func NotImplementedHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (a *API) GenerateToken(user string, role string) (string, error) {
+	// Note: This function is no longer used since we switched to static API key authentication
+	// Kept for backwards compatibility
 
 	// https://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#rfc.section.4.1.7
 	now := time.Now()
@@ -192,7 +194,7 @@ func (a *API) GenerateToken(user string, role string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	a.Tokens.Add(token)
+	// a.Tokens.Add(token) - Removed: Tokens field no longer exists
 	return token, nil
 }
 

@@ -62,3 +62,8 @@ Outbound types are accepted by the messages resource and validated.
 ```bash
 make build-protoc
 ```
+
+### Usage locally with http
+```bash
+WA_API_KEY=local_test WA_WEBHOOK=https://xxx.webhook.cool WA_TLS_DISABLED=1 WA_INSECURE_SKIP_VERIFY=1  go run ./cmd/main.go --configfile=cmd/config.json
+```

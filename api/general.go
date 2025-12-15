@@ -15,11 +15,38 @@ var (
 	cleanUp          = regexp.MustCompile(`[^\+0-9]`)
 )
 
+// SendMessages godoc
+// @Summary Send a message
+// @Description Send a WhatsApp message to a recipient
+// @Tags messages
+// @Accept json
+// @Produce json
+// @Param phoneNumberId path string true "Phone Number ID"
+// @Param body body model.Message true "Message to send"
+// @Success 200 {object} model.IdResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure default {object} model.ErrorResponse
+// @Router /{phoneNumberId}/messages [post]
+// @Security BearerAuth
 func (a *API) SendMessages(ctx *fasthttp.RequestCtx) {
+	logger := a.LoggerFromCtx(ctx)
+
+	// Validate phoneNumberId parameter
+	phoneNumberId, ok := ctx.UserValue("phoneNumberId").(string)
+	if !ok || phoneNumberId == "" {
+		returnError(ctx, 400, model.Error{
+			Code:    400,
+			Details: "Missing required parameter: phoneNumberId",
+			Title:   "Client Error",
+			Href:    "",
+		})
+		return
+	}
+
 	msg := model.AcquireMessage()
 	msg.Reset()
 	defer model.ReleaseMessage(msg)
-	logger := a.LoggerFromCtx(ctx)
+
 	if err := unmarshalPayload(ctx, msg); err != nil {
 		logger.Warn("Unable to send message", "error", err)
 		return
@@ -27,7 +54,7 @@ func (a *API) SendMessages(ctx *fasthttp.RequestCtx) {
 
 	// return
 	id := uuid.New().String()
-	logger.Info("Generated message ", "msg_id", id)
+	logger.Info("Generated message", "msg_id", id, "phone_number_id", phoneNumberId)
 	msg.Id = id
 	resp := AcquireIdResponse()
 	resp.Reset()

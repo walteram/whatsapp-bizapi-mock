@@ -28,9 +28,25 @@
     "admin": "secret"
   },
   "inboundMedia": {
-    "image": "image",
-    "video": "video",
+    "audio": "audio",
     "document": "document",
-    "audio": "audio"
+    "image": "image",
+    "video": "video"
+  },
+  "applicationSettings": {
+    "media": {
+      "auto_download": [
+      ]
+    },
+    "webhooks": {
+      "url": "https://amber-cloud-16.webhook.cool",
+      "max_concurrent_requests": 8
+    }
+  },
+  "profileAbout": {
+
+  },
+  "businessProfile": {
+
   }
 }

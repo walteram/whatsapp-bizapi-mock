@@ -35,7 +35,7 @@ var (
 	apiPrefix              = app.Flag("apiprefix", "the prefix for the API").Default("/v1").OverrideDefaultFromEnvar("WA_API_PREFIX").String()
 	addr                   = app.Flag("addr", "the address the API will listen on").Default("0.0.0.0:9090").OverrideDefaultFromEnvar("WA_ADDR").String()
 	webhookURL             = app.Flag("webhook", "the default webhook url").Default("https://localhost:9000/webhook").OverrideDefaultFromEnvar("WA_WEBHOOK").String()
-	disableTLS             = app.Flag("disableTLS", "run the API with tls disabled").OverrideDefaultFromEnvar("WA_TLS_ENABLED").Bool()
+	disableTLS             = app.Flag("disableTLS", "run the API with tls disabled").OverrideDefaultFromEnvar("WA_TLS_DISABLED").Bool()
 	insecureSkipVerify     = app.Flag("insecureSkipVerify", "do not validate the certificate of the webhook").OverrideDefaultFromEnvar("WA_INSECURE_SKIP_VERIFY").Bool()
 	soReuseport            = app.Flag("reuseport", "(experimental) uses SO_REUSEPORT option to start TCP listener").Bool() // see https://www.nginx.com/blog/socket-sharding-nginx-release-1-9-1/
 	compressWebhookContent = app.Flag("compress", "compress the content of the webhook requests using gzip").Bool()
@@ -46,8 +46,7 @@ var (
 	graceperiod            = app.Flag("graceperiod", "duration to wait for the api to shutdown").Default("5s").Duration()
 	requestLimit           = app.Flag("requestlimit", "set a requestlimit (req/s) for specific endpoints").Default("20").Uint()
 	maxStatiPerWebhook     = app.Flag("maxStatiPerWebhook", "set the maximum amout of stati that will be sent in a single webhook").Default("1000").Int()
-
-	staticAPIToken = os.Getenv("WA_API_KEY")
+	staticAPIToken         = app.Flag("apiKey", "the static api key").Default("admin").OverrideDefaultFromEnvar("WA_API_KEY").String()
 )
 
 func setupConfig(path string) error {
@@ -117,7 +116,10 @@ func main() {
 	wh.CompressMinsize = *compressMinsize
 	wh.MaxStatiPerWebhookRequest = *maxStatiPerWebhook
 
-	apiServer := api.NewAPI(*apiPrefix, staticAPIToken, *requestLimit, api.Config, wh)
+	if *staticAPIToken == "" {
+		mainLogger.Warn("WA_API_KEY environment variable is not set - API will reject all requests")
+	}
+	apiServer := api.NewAPI(*apiPrefix, *staticAPIToken, *requestLimit, api.Config, wh)
 
 	errors := make(chan error, 5)
 	stopWebhook := wh.Run(errors)

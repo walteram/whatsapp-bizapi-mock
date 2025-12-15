@@ -25,56 +25,15 @@ const (
 func (a *API) Authorize(h fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
 		logger := a.LoggerFromCtx(ctx)
-		token, err := parseTokenWithClaims(ctx)
-		if err != nil {
-			logger.Warn("Failed to authorize user", "reason", "failed to parse token", "error", err)
+		token, _ := extractAuthToken(ctx, "Bearer")
 
-		} else if token.Valid && a.Tokens.Contains(token.Raw) {
-			logger.Info("Successfully authorized user",
-				"subject", token.Claims.(*CustomClaims).Subject,
-			)
+		if a.APIKey != "" && token == a.APIKey {
+			logger.Info("Successfully authorized user with API key")
 			h(ctx)
 			return
-
-		} else {
-			logger.Warn("Failed to authorize user", "reason", "token is invalid")
 		}
 
-		ctx.SetStatusCode(401)
-	})
-}
-
-func (a *API) AuthorizeWithRoles(h fasthttp.RequestHandler, roles []string) fasthttp.RequestHandler {
-	return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
-		logger := a.LoggerFromCtx(ctx)
-		token, err := parseTokenWithClaims(ctx)
-		if err != nil {
-			logger.Warn("Failed to authorize user", "reason", "failed to parse token", "error", err)
-
-		} else if claims, ok := token.Claims.(*CustomClaims); ok &&
-			token.Valid &&
-			a.Tokens.Contains(token.Raw) {
-
-			if contains(roles, claims.Role) {
-				logger.Info("Successfully authorized user",
-					"subject", claims.Subject,
-					"role", claims.Role,
-				)
-				h(ctx)
-				return
-
-			} else {
-				logger.Warn("Failed to authorize user",
-					"reason", "access denied due to role",
-					"subject", claims.Subject,
-					"role", claims.Role,
-				)
-			}
-
-		} else {
-			a.Log.Warn("Failed to authorize user", "reason", "token is invalid")
-		}
-
+		logger.Warn("Failed to authorize user", "reason", "invalid API key")
 		ctx.SetStatusCode(401)
 	})
 }
