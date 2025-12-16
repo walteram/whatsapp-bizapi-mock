@@ -87,6 +87,7 @@ message TemplateMessage {
         enum Code {
             en = 0;
             de = 1;
+            pt_BR = 2;
         }
         Policy policy = 1 [(validate.rules).enum.defined_only = true];
         Code code = 2 [(validate.rules).enum.defined_only = true];
