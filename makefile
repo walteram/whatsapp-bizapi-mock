@@ -25,7 +25,7 @@ build: ## Build your project and put the output binary in out/bin/
 
 build-protoc: ## Build the protocol buffer model
 	mkdir -p model
-	docker run --rm -v $(shell pwd):/app -w /app $(PROTOC_BUILDER_IMAGE) \
+	podman run --rm -v $(shell pwd):/app -w /app $(PROTOC_BUILDER_IMAGE) \
 		-I /go/src -I /go/src/github.com/envoyproxy/protoc-gen-validate \
 		--proto_path=protobuf --gogofast_out=":./" --validate_out="lang=go:." \
 		meta.proto general.proto contacts.proto settings.proto status.proto messages.proto users.proto backup.proto internal.proto

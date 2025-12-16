@@ -45,7 +45,7 @@ var (
 	logformat              = app.Flag("logformat", "set the logformat for the application").Default("json").String()
 	graceperiod            = app.Flag("graceperiod", "duration to wait for the api to shutdown").Default("5s").Duration()
 	requestLimit           = app.Flag("requestlimit", "set a requestlimit (req/s) for specific endpoints").Default("20").Uint()
-	maxStatiPerWebhook     = app.Flag("maxStatiPerWebhook", "set the maximum amout of stati that will be sent in a single webhook").Default("1000").Int()
+	maxStatiPerWebhook     = app.Flag("maxStatiPerWebhook", "set the maximum amout of stati that will be sent in a single webhook").Default("1000").OverrideDefaultFromEnvar("WA_MAX_STATI_WEBHOOK").Int()
 	staticAPIToken         = app.Flag("apiKey", "the static api key").Default("admin").OverrideDefaultFromEnvar("WA_API_KEY").String()
 )
 
@@ -115,6 +115,9 @@ func main() {
 	wh.Compress = *compressWebhookContent
 	wh.CompressMinsize = *compressMinsize
 	wh.MaxStatiPerWebhookRequest = *maxStatiPerWebhook
+	wh.BusinessAccountID = api.Config.BusinessAccountId
+	wh.PhoneNumberID = api.Config.PhoneNumberId
+	wh.DisplayPhoneNumber = api.Config.DisplayPhoneNumber
 
 	if *staticAPIToken == "" {
 		mainLogger.Warn("WA_API_KEY environment variable is not set - API will reject all requests")

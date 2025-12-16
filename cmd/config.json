@@ -48,5 +48,8 @@
   },
   "businessProfile": {
 
-  }
+  },
+  "businessAccountId": "any",
+  "phoneNumberId": "12345678",
+  "displayPhoneNumber": "+1234567890"
 }

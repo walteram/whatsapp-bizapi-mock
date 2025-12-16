@@ -12,6 +12,53 @@ All requests (except `/generate` and `/generate/cancel`) must include the Author
 Authorization: Bearer <your_api_key>
 ```
 
+## Webhook Configuration
+
+Webhooks are now sent following Meta's official WhatsApp Cloud API format. To configure the webhook metadata, add these fields to your configuration file:
+
+```json
+{
+  "businessAccountId": "your_business_account_id",
+  "phoneNumberId": "your_phone_number_id",
+  "displayPhoneNumber": "+1234567890"
+}
+```
+
+The webhook payload will follow this structure:
+```json
+{
+  "object": "whatsapp_business_account",
+  "entry": [{
+    "id": "BUSINESS_ACCOUNT_ID",
+    "changes": [{
+      "field": "messages",
+      "value": {
+        "messaging_product": "whatsapp",
+        "metadata": {
+          "display_phone_number": "PHONE_NUMBER",
+          "phone_number_id": "PHONE_NUMBER_ID"
+        },
+        "contacts": [...],
+        "messages": [...],
+        "statuses": [{
+          "id": "wamid.xxx",
+          "status": "delivered",
+          "recipient_id": "+5511999999999",
+          "timestamp": 1734304800,
+          "conversation": {
+            "id": "conv123"
+          },
+          "pricing": {
+            "pricing_model": "CBP",
+            "billable": true
+          }
+        }]
+      }
+    }]
+  }]
+}
+```
+
 ## Supported Endpoints
 
 | Endpoint| Usage | Supported |

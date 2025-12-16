@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"encoding/json"
+
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/ron96G/whatsapp-bizapi-mock/model"
@@ -51,6 +53,9 @@ type Webhook struct {
 	CompressMinsize           int
 	MaxStatiPerWebhookRequest int
 	StatusMergeInterval       time.Duration
+	BusinessAccountID         string
+	PhoneNumberID             string
+	DisplayPhoneNumber        string
 	mux                       sync.Mutex
 }
 
@@ -200,7 +205,11 @@ func (w *Webhook) Run(errors chan error) (stop chan int) {
 				buf := util.AcquireBuffer()
 				buf.Reset()
 
-				if err := marsheler.Marshal(buf, whReq); err != nil {
+				// Convert to Meta webhook format
+				payload := ConvertToMetaFormat(whReq, w.BusinessAccountID, w.PhoneNumberID, w.DisplayPhoneNumber)
+
+				// Marshal using encoding/json instead of protobuf marshaler
+				if err := json.NewEncoder(buf).Encode(payload); err != nil {
 					w.WaitInterval = w.WaitInterval + 3*time.Second
 					errors <- err
 					w.Queue <- whReq

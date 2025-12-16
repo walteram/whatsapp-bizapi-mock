@@ -27,6 +27,9 @@ message InternalConfig {
     string profilePhotoFilename = 10;
     bool verified = 11;
     bytes webhookCA = 12;
+    string businessAccountId = 13;
+    string phoneNumberId = 14;
+    string displayPhoneNumber = 15;
 }
 
 message WebhookRequest {
@@ -35,4 +38,38 @@ message WebhookRequest {
     repeated whatsapp.Status statuses = 3;
     repeated whatsapp.Error errors = 4;
     int32 errorCounter = 5;
+}
+
+// WebhookMetadata represents the metadata for a webhook notification
+message WebhookMetadata {
+    string display_phone_number = 1;
+    string phone_number_id = 2;
+}
+
+// WebhookValue represents the value object in a webhook change
+message WebhookValue {
+    string messaging_product = 1;
+    WebhookMetadata metadata = 2;
+    repeated whatsapp.Contact contacts = 3;
+    repeated whatsapp.Message messages = 4;
+    repeated whatsapp.Status statuses = 5;
+    repeated whatsapp.Error errors = 6;
+}
+
+// WebhookChange represents a change in a webhook entry
+message WebhookChange {
+    string field = 1;
+    WebhookValue value = 2;
+}
+
+// WebhookEntry represents an entry in the webhook payload
+message WebhookEntry {
+    string id = 1;
+    repeated WebhookChange changes = 2;
+}
+
+// WebhookPayload represents the complete webhook payload following Meta's format
+message WebhookPayload {
+    string object = 1;
+    repeated WebhookEntry entry = 2;
 }
